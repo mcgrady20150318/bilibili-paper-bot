@@ -19,7 +19,9 @@ jobs:
 
     steps:
     - name: Setup Python environment
-      uses: actions/setup-python@v3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11' 
 
     - name: Install Dependence
       run: pip install requests
