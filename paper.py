@@ -39,4 +39,6 @@ def generate_index(id):
     vector_store = Pinecone.from_documents(texts, embeddings, index_name=index_name)
     
 if __name__ == '__main__':
-    download_pdf('2310.09277')
+    id = '2310.09277'
+    download_pdf(id)
+    generate_index(id)
