@@ -22,7 +22,7 @@ jobs:
         python-version: '3.11' 
 
     - name: Install Dependence
-      run: pip install requests, langchain
+      run: pip install requests langchain
 
     - name: Run paper.py
       run: python ./paper.py
