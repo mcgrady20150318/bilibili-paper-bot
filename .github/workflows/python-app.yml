@@ -19,7 +19,7 @@ jobs:
         python-version: '3.11' 
 
     - name: Install Dependence
-      run: pip install requests langchain pinecone 
+      run: pip install requests langchain pinecone-client
 
     - name: Run paper.py
       run: python ./paper.py
