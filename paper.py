@@ -8,6 +8,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Pinecone
 import pinecone
 import datetime
+import re
 
 MILVUS_HOST = "localhost"
 MILVUS_PORT = "19530"
