@@ -7,6 +7,7 @@ from langchain.vectorstores import Milvus
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Pinecone
 import pinecone
+import datetime
 
 MILVUS_HOST = "localhost"
 MILVUS_PORT = "19530"
@@ -37,8 +38,22 @@ def generate_index(id):
     texts = text_splitter.split_documents(docs)
     index_name = 'qaoverpaper'
     vector_store = Pinecone.from_documents(texts, embeddings, index_name=index_name)
+
+def get_today_list():
+    today = (datetime.date.today()).strftime('%Y-%m-%d')
+    url = 'https://huggingface.co/papers?date='+today
+    x = requests.get(url)
+    data = x.text
+    regex = re.compile(r'<a href="/papers/(.*?)"')
+    papers = re.findall(regex,data)
+    paperlist = list(set(papers))
+    return paperlist
     
 if __name__ == '__main__':
-    id = '2310.09277'
-    download_pdf(id)
-    generate_index(id)
+    ids = get_today_list()
+    for id in ids:
+        try:
+            download_pdf(id)
+            generate_index(id)
+        except:
+            pass
