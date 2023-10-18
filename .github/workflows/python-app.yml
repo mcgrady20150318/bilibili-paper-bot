@@ -21,7 +21,7 @@ jobs:
         python-version: '3.11' 
 
     - name: Install Dependence
-      run: pip install requests langchain pinecone-client openai pymupdf tiktoken datetime
+      run: pip install requests langchain openai pymupdf tiktoken datetime redis
 
     - name: Run paper.py
       run: python ./paper.py
