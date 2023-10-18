@@ -27,7 +27,6 @@ jobs:
 
     - name: Run paper.py
       run: python ./paper.py
-      cron: "0 20-6/1 * * *"
 
     
    
