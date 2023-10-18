@@ -1,6 +1,8 @@
 name: Python application
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  OPENAI_API_BASE: ${{ variables.OPENAI_API_BASE }}
+  REDIS_URL: ${{ variables.REDIS_URL }}
   
 on:
   push:
