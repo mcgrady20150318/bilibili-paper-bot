@@ -8,6 +8,10 @@ on:
 
 jobs:
   build:
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_API_BASE: ${{ env.OPENAI_API_BASE }}
+      REDIS_URL: ${{ env.REDIS_URL }}
 
     runs-on: ubuntu-latest
 
@@ -23,5 +27,6 @@ jobs:
 
     - name: Run paper.py
       run: python ./paper.py
+
     
    
