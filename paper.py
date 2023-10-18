@@ -7,6 +7,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.redis import Redis
 import datetime
 import re
+import pickle
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -31,6 +32,10 @@ def generate_index(id):
     rds = Redis.from_documents(texts,embeddings,redis_url=redis_url,index_name=id)
 
 def get_today_list():
+    ids = []
+    if os.path.exists('./arxiv.bin'):
+        f = open('./arxiv.bin','rb') 
+        ids = pickle.load(f)
     today = (datetime.date.today()).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
@@ -38,7 +43,12 @@ def get_today_list():
     regex = re.compile(r'<a href="/papers/(.*?)"')
     papers = re.findall(regex,data)
     paperlist = list(set(papers))
-    return paperlist
+    paperlist = [paper for paper in paperlist if len(paper) == 10]
+    arxivids = [paper for paper in paperlist if paper not in ids]
+    f = open('./arxiv.bin','wb')
+    pickle.dump(paperlist,f)
+    f.close()
+    return arxivids
     
 if __name__ == '__main__':
     ids = get_today_list()
