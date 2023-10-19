@@ -34,12 +34,9 @@ def generate_index(id):
 
 def get_today_list():
     ids = []
-    print(os.system('pwd'))
     if os.path.exists('./arxiv.bin'):
-        print('bin')
         f = open('./arxiv.bin','rb') 
         ids = pickle.load(f)
-    print(ids)
     today = (datetime.date.today()).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
@@ -49,6 +46,8 @@ def get_today_list():
     paperlist = list(set(papers))
     paperlist = [paper for paper in paperlist if len(paper) == 10]
     arxivids = [paper for paper in paperlist if paper not in ids]
+    print(paperlist)
+    print(arxivids)
     f = open('./arxiv.bin','wb')
     pickle.dump(paperlist,f)
     f.close()
@@ -56,7 +55,6 @@ def get_today_list():
     
 if __name__ == '__main__':
     ids = get_today_list()
-    print(ids)
     for id in ids:
         try:
             download_pdf(id)
