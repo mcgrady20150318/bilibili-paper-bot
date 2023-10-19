@@ -34,9 +34,12 @@ def generate_index(id):
 
 def get_today_list():
     ids = []
+    print(os.system('pwd'))
     if os.path.exists('./arxiv.bin'):
+        print('bin')
         f = open('./arxiv.bin','rb') 
         ids = pickle.load(f)
+    print(ids)
     today = (datetime.date.today()).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
