@@ -8,13 +8,14 @@ from langchain.vectorstores.redis import Redis
 import datetime
 import re
 import pickle
-
+import redis
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
 redis_url = os.getenv('REDIS_URL')
 
 embeddings = OpenAIEmbeddings()
+r = redis.from_url(redis_url)
 
 def download_pdf(id):
     url = 'https://arxiv.org/pdf/'+id+'.pdf'
@@ -31,12 +32,11 @@ def generate_index(id):
     text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     texts = text_splitter.split_documents(docs)
     rds = Redis.from_documents(texts,embeddings,redis_url=redis_url,index_name=id)
+    r.rpush('cached_ids',id)
 
 def get_today_list():
-    ids = []
-    if os.path.exists('./arxiv.bin'):
-        f = open('./arxiv.bin','rb') 
-        ids = pickle.load(f)
+    ids = r.lrange('cached_ids',0,-1)
+    ids = [id.decode("utf-8") for id in ids]
     today = (datetime.date.today()).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
@@ -46,11 +46,6 @@ def get_today_list():
     paperlist = list(set(papers))
     paperlist = [paper for paper in paperlist if len(paper) == 10]
     arxivids = [paper for paper in paperlist if paper not in ids]
-    print(paperlist)
-    print(arxivids)
-    f = open('./arxiv.bin','wb')
-    pickle.dump(paperlist,f)
-    f.close()
     return arxivids
     
 if __name__ == '__main__':
@@ -61,4 +56,3 @@ if __name__ == '__main__':
             generate_index(id)
         except:
             pass
-    print(os.listdir('/home/runner/work/paper-embedding/paper-embedding/'))
