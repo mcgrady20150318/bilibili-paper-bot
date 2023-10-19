@@ -54,11 +54,11 @@ def get_today_list():
     return arxivids
     
 if __name__ == '__main__':
+    ids = get_today_list()
+    for id in ids:
+        try:
+            download_pdf(id)
+            generate_index(id)
+        except:
+            pass
     print(os.listdir('/home/runner/work/paper-embedding/paper-embedding/'))
-    # ids = get_today_list()
-    # for id in ids:
-    #     try:
-    #         download_pdf(id)
-    #         generate_index(id)
-    #     except:
-    #         pass
