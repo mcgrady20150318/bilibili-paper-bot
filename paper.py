@@ -49,12 +49,11 @@ def get_today_list(day=0):
     return arxivids
     
 if __name__ == '__main__':
-    for day in range(1,8):
-        ids = get_today_list(day)
-        print(ids)
-        for id in ids:
-            try:
-                download_pdf(id)
-                generate_index(id)
-            except:
-                pass
+    ids = get_today_list()
+    print(ids)
+    for id in ids:
+        try:
+            download_pdf(id)
+            generate_index(id)
+        except:
+            pass
