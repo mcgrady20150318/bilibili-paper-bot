@@ -53,6 +53,7 @@ def get_today_list():
     
 if __name__ == '__main__':
     ids = get_today_list()
+    print(ids)
     for id in ids:
         try:
             download_pdf(id)
