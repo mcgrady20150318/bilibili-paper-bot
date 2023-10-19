@@ -34,10 +34,10 @@ def generate_index(id):
     rds = Redis.from_documents(texts,embeddings,redis_url=redis_url,index_name=id)
     r.rpush('cached_ids',id)
 
-def get_today_list():
+def get_today_list(day=0):
     ids = r.lrange('cached_ids',0,-1)
     ids = [id.decode("utf-8") for id in ids]
-    today = (datetime.date.today()).strftime('%Y-%m-%d')
+    today = (datetime.date.today() - datetime.timedelta(day)).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
     data = x.text
@@ -49,11 +49,12 @@ def get_today_list():
     return arxivids
     
 if __name__ == '__main__':
-    ids = get_today_list()
-    print(ids)
-    for id in ids:
-        try:
-            download_pdf(id)
-            generate_index(id)
-        except:
-            pass
+    for day in range(1,8):
+        ids = get_today_list(day)
+        print(ids)
+        for id in ids:
+            try:
+                download_pdf(id)
+                generate_index(id)
+            except:
+                pass
