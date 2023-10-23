@@ -52,8 +52,8 @@ if __name__ == '__main__':
     ids = get_today_list()
     print(ids)
     for id in ids:
-        try:
-            download_pdf(id)
-            generate_index(id)
-        except:
-            pass
+        # try:
+        download_pdf(id)
+        generate_index(id)
+        # except:
+            # pass
