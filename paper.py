@@ -49,7 +49,7 @@ def get_today_list(day=0):
     return arxivids
     
 if __name__ == '__main__':
-    ids = get_today_list()
+    ids = get_today_list(day=1)
     print(ids)
     for id in ids:
         try:
