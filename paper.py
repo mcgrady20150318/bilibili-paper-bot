@@ -5,6 +5,9 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from typing import Any
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.redis import Redis
+from langchain.llms import OpenAI
+from langchain.chains import LLMChain
+from langchain.prompts import PromptTemplate
 import datetime
 import re
 import pickle
@@ -21,6 +24,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
 redis_url = os.getenv('REDIS_URL')
 
+llm = OpenAI(temperature=0.0,max_tokens=1000)
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
 
@@ -55,6 +59,9 @@ def generate_readme(id):
     f.write("<url>https://arxiv.org/pdf/" + id+"</url>\n")
     f.write("<comment>可以试试/ask + 你的提问和本篇论文进行交流</comment>")
     f.close()
+    with open('./'+id+'/readme.txt', 'rb') as f:
+        file_content = f.read()
+    r.set(id+':readme.txt',file_content)
 
 def get_time_count(audio_file):
     audio = MP3(audio_file)
@@ -81,6 +88,11 @@ def gen_assets(id):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
 
+async def gen_voice(text,idx,id):
+    text += '欢迎一键三连。'
+    communicate = edge_tts.Communicate(text, VOICE)  
+    await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
+
 def generate_video(id,summary):
     asyncio.run(gen_voice(summary,0,id))
     print('...audio...')
@@ -100,12 +112,18 @@ def generate_video(id,summary):
     audio_clip = concatenate_audioclips([AudioFileClip(c) for c in audio_files])
     video_clip = image_clip.set_audio(audio_clip)
     video_clip.write_videofile('./'+id+'/video/'+id+'.mp4',codec='libx264')
+    with open('./'+id+'/video/'+id+'.mp4', 'rb') as f:
+        file_content = f.read()
+    r.set(id+':'+id+".mp4",file_content)
     print('...generate video done...')
-
+    
 def generate_assets(id):
     download_pdf(id)
     print('...download...')
     gen_assets(id)
+    with open('./'+id+'/assets/0.jpg', 'rb') as f:
+        file_content = f.read()
+    r.set(id+':cover.jpg',file_content)
     print('...assets...')
 
 def get_upload_info(id):
@@ -160,13 +178,10 @@ if __name__ == '__main__':
     for id in ids:
         # try:
         generate_assets(id)
-        with open('./'+id+'/assets/0.jpg', 'rb') as f:
-            file_content = f.read()
-        r.set(id+':0.jpg',file_content)
-            # generate_readme(id)
-            # title,describe,tags,speech = get_upload_info(id)
-            # generate_video(id,speech)
-            # generate_index(id)
+        generate_readme(id)
+        title,describe,tags,speech = get_upload_info(id)
+        generate_video(id,speech)
+        # generate_index(id)
         # except:
         #     pass
 
