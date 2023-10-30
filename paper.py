@@ -24,7 +24,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
 redis_url = os.getenv('REDIS_URL')
 
-llm = OpenAI(temperature=0.0,max_tokens=1000)
+llm = OpenAI(temperature=0.0,max_tokens=1500)
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
 VOICE = "zh-CN-XiaoyiNeural"  
