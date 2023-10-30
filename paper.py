@@ -160,6 +160,9 @@ if __name__ == '__main__':
     for id in ids:
         # try:
         generate_assets(id)
+        with open('./'+id+'/assets/0.jpg', 'rb') as f:
+            file_content = f.read()
+        r.set(id+':0.jpg',file_content)
             # generate_readme(id)
             # title,describe,tags,speech = get_upload_info(id)
             # generate_video(id,speech)
