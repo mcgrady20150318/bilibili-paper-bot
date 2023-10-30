@@ -158,14 +158,14 @@ if __name__ == '__main__':
     # print(ids)
     ids = ['2310.11511']
     for id in ids:
-        try:
-            generate_assets(id)
+        # try:
+        generate_assets(id)
             # generate_readme(id)
             # title,describe,tags,speech = get_upload_info(id)
             # generate_video(id,speech)
             # generate_index(id)
-        except:
-            pass
+        # except:
+        #     pass
 
 
 
