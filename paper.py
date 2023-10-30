@@ -9,6 +9,13 @@ import datetime
 import re
 import pickle
 import redis
+import arxiv
+import asyncio
+from mutagen.mp3 import MP3
+from moviepy.editor import *
+import edge_tts
+import pdf2image
+import codecs
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -17,14 +24,112 @@ redis_url = os.getenv('REDIS_URL')
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
 
+def get_paper_info(id,max_results=1):
+
+    big_slow_client = arxiv.Client(
+        page_size = 1,
+        delay_seconds = 10,
+        num_retries = 1
+    )
+
+    search = arxiv.Search(
+        id_list=[id],
+        max_results = max_results,
+    )
+
+    result = big_slow_client.results(search)
+    result = list(result)[0]
+    title = result.title
+    abstract = result.summary
+    return title,abstract.replace('\n',' ').replace('{','').replace('}','')
+
+def generate_readme(id):
+    title,abstract  = get_paper_info(id)
+    f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
+    prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",按照如下格式生成内容，<describe>一段200字左右的论文解读，并给出3个引导阅读的问题</describe>，回车，<tags>5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
+    PROMPT = PromptTemplate(template=prompt_template, input_variables=[])
+    chain = LLMChain(llm=llm, prompt=PROMPT)
+    output = chain.run(text='')
+    f.write(output+'\n')
+    f.write("<title>"+ title[:80]+"</title>\n")
+    f.write("<url>https://arxiv.org/pdf/" + id+"</url>\n")
+    f.write("<comment>可以试试/ask + 你的提问和本篇论文进行交流</comment>")
+    f.close()
+
+def get_time_count(audio_file):
+    audio = MP3(audio_file)
+    time_count = int(audio.info.length)
+    return time_count
+
 def download_pdf(id):
-    url = 'https://arxiv.org/pdf/'+id+'.pdf'
+    url = 'http://arxiv.org/pdf/'+id+'.pdf'
     response = requests.get(url)
     if not os.path.exists('./'+id):
         os.mkdir('./'+id)
+        os.mkdir('./'+id+'/assets')
+        os.mkdir('./'+id+'/audio')
+        os.mkdir('./'+id+'/video')
     output_path = './' + id + '/' + id + '.pdf'
     with open(output_path, 'wb') as file:
         file.write(response.content)
+
+def gen_assets(id):
+    output_dir = './'+id+'/assets/'
+    os.makedirs(output_dir, exist_ok=True)
+    pages = pdf2image.convert_from_path('./'+id+'/'+id+'.pdf')
+    for i, page in enumerate(pages):
+        image_path = os.path.join(output_dir, f'{i}.jpg')
+        page.save(image_path, 'JPEG')
+
+def generate_video(id,summary):
+    asyncio.run(gen_voice(summary,0,id))
+    print('...audio...')
+    images = os.listdir('./'+id+'/assets')
+    images.sort(key=lambda x:int(x[:-4]))
+    image_files = ['./'+id+'/assets/' + a for a in images][:8]
+    audios = os.listdir('./'+id+'/audio')
+    audios.sort(key=lambda x:int(x[:-4]))
+    audio_files = ['./'+id+'/audio/' + a for a in audios]
+
+    total_time = 0
+
+    for audio_file in audio_files:
+        total_time += get_time_count(audio_file)
+
+    image_clip = ImageSequenceClip(image_files, fps=len(image_files)/total_time)
+    audio_clip = concatenate_audioclips([AudioFileClip(c) for c in audio_files])
+    video_clip = image_clip.set_audio(audio_clip)
+    video_clip.write_videofile('./'+id+'/video/'+id+'.mp4',codec='libx264')
+    print('...generate video done...')
+
+def generate_assets(id):
+    download_pdf(id)
+    print('...download...')
+    gen_assets(id)
+    print('...assets...')
+
+def get_upload_info(id):
+    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
+    data = f.read()
+    rex = r'<title>(.*?)</title>'
+    title = re.findall(rex,data)[0]
+    print(title)
+    rex = r'<tags>(.*?)</tags>'
+    # taglist = ['人工智能','机器学习']
+    tags = re.findall(rex,data)[0]
+    tags = tags.replace(' ',',')
+    print(tags)
+    rex = r'<describe>(.*?)</describe>'
+    speech = re.findall(rex,data)[0]
+    print(speech)
+    rex = r'<url>(.*?)</url>'
+    url = re.findall(rex,data)[0]
+    print(url)
+    rex = r'<comment>(.*?)</comment>'
+    comment = re.findall(rex,data)[0]
+    print(comment)
+    describe = "彩蛋：" + comment + "\n" + "论文简述：" + speech + "\n" + "论文链接： " + url
+    return title,describe,tags,speech
 
 def generate_index(id):
     loader = PyMuPDFLoader('./'+id+'/'+id+'.pdf')
@@ -49,12 +154,16 @@ def get_today_list(day=0):
     return arxivids
     
 if __name__ == '__main__':
-    ids = get_today_list()
-    print(ids)
+    # ids = get_today_list()
+    # print(ids)
+    ids = ['2310.11511']
     for id in ids:
         try:
-            download_pdf(id)
-            generate_index(id)
+            generate_assets(id)
+            # generate_readme(id)
+            # title,describe,tags,speech = get_upload_info(id)
+            # generate_video(id,speech)
+            # generate_index(id)
         except:
             pass
 
