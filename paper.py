@@ -27,6 +27,7 @@ redis_url = os.getenv('REDIS_URL')
 llm = OpenAI(temperature=0.0,max_tokens=1000)
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
+VOICE = "zh-CN-XiaoyiNeural"  
 
 def get_paper_info(id,max_results=1):
 
