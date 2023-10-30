@@ -177,18 +177,17 @@ def get_today_list(day=0):
     return arxivids
     
 if __name__ == '__main__':
-    # ids = get_today_list()
-    # print(ids)
-    ids = ['2310.17994']
+    ids = get_today_list()
+    print(ids)
     for id in ids:
-        # try:
-        generate_assets(id)
-        generate_readme(id)
-        title,describe,tags,speech = get_upload_info(id)
-        generate_video(id,speech)
-        generate_index(id)
-        # except:
-            # print('exception')
+        try:
+            generate_assets(id)
+            generate_readme(id)
+            title,describe,tags,speech = get_upload_info(id)
+            generate_video(id,speech)
+            generate_index(id)
+        except:
+            print('exception')
 
 
 
