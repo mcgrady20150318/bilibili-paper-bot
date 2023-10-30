@@ -21,7 +21,7 @@ jobs:
         python-version: '3.11' 
 
     - name: Install Dependence
-      run: pip install requests langchain openai pymupdf tiktoken datetime redis asyncio mutagen moviepy codecs arxiv edge_tts pdf2image
+      run: pip install requests langchain openai pymupdf tiktoken datetime redis asyncio mutagen moviepy arxiv edge_tts pdf2image
 
     - name: Run paper.py
       run: python ./paper.py
