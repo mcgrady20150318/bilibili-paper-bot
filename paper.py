@@ -50,7 +50,7 @@ def get_paper_info(id,max_results=1):
 
 def generate_readme(id):
     title,abstract  = get_paper_info(id)
-    f = codecs.open('readme.txt','w',"utf-8")
+    f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
     prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",严格按照如下xml格式生成内容，<describe>这里生成一段200字左右的论文解读</describe>，回车，<read>这里生成3个引导读者阅读的问题</read>，回车，<tags>这里生成5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
     PROMPT = PromptTemplate(template=prompt_template, input_variables=[])
     chain = LLMChain(llm=llm, prompt=PROMPT)
@@ -128,7 +128,7 @@ def generate_assets(id):
     print('...assets...')
 
 def get_upload_info(id):
-    f = codecs.open('./readme.txt','r',"utf-8")
+    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
     data = f.read()
     rex = r'<title>(.*?)</title>'
     title = re.findall(rex,data)[0]
