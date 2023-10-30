@@ -165,8 +165,9 @@ def generate_index(id):
     r.rpush('cached_ids',id)
 
 def get_today_list(day=0):
-    ids = r.lrange('cached_ids',0,-1)
-    ids = [id.decode("utf-8") for id in ids]
+    # ids = r.lrange('cached_ids',0,-1)
+    # ids = [id.decode("utf-8") for id in ids]
+    ids = []
     today = (datetime.date.today() - datetime.timedelta(day)).strftime('%Y-%m-%d')
     url = 'https://huggingface.co/papers?date='+today
     x = requests.get(url)
