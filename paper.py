@@ -24,7 +24,7 @@ os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
 redis_url = os.getenv('REDIS_URL')
 
-llm = OpenAI(temperature=0.0,max_tokens=1500)
+llm = OpenAI(temperature=0.0,max_tokens=2000)
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
 VOICE = "zh-CN-XiaoyiNeural"  
@@ -180,18 +180,17 @@ def get_today_list(day=0):
     return arxivids
     
 if __name__ == '__main__':
-    # ids = get_today_list()
-    # print(ids)
-    ids = ['2310.18313']
+    ids = get_today_list()
+    print(ids)
     for id in ids:
-        # try:
-        generate_assets(id)
-        generate_readme(id)
-        ctitle,title,describe,tags,speech = get_upload_info(id)
-        generate_video(id,speech)
-        generate_index(id)
-        # except:
-            # print('exception')
+        try:
+            generate_assets(id)
+            generate_readme(id)
+            ctitle,title,describe,tags,speech = get_upload_info(id)
+            generate_video(id,speech)
+            generate_index(id)
+        except:
+            print('exception')
 
 
 
