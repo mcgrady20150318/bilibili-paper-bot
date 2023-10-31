@@ -90,8 +90,9 @@ def gen_assets(id):
         page.save(image_path, 'JPEG')
 
 async def gen_voice(text,idx,id):
+    text = "大家好！这是paperweekly机器人推荐的今日AI热文。" + text 
     text += '欢迎一键三连。'
-    communicate = edge_tts.Communicate(text, VOICE, rate = '-5%')  
+    communicate = edge_tts.Communicate(text, VOICE, rate = '-8%')  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
 def generate_video(id,summary):
