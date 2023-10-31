@@ -191,9 +191,9 @@ async def upload_bilibili(id):
     with open('0.jpg','wb') as f:
         f.write(cover)
 
-    sessdata = r.get('bilibili:sessdata')
-    bili_jct = r.get('bilibili:bili_jct')
-    buvid3 = r.get('bilibili:buvid3')
+    sessdata = r.get('bilibili:sessdata').decode()
+    bili_jct = r.get('bilibili:bili_jct').decode()
+    buvid3 = r.get('bilibili:buvid3').decode()
 
     credential = Credential(sessdata=sessdata, bili_jct=bili_jct, buvid3=buvid3)
     # print(credential.check_valid())
