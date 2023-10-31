@@ -183,9 +183,10 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    ids = get_today_list()
+    ids = get_today_list()        
     print(ids)
     for id in ids:
+        r.rpush('paper',id)
         try:
             generate_assets(id)
             generate_readme(id)
