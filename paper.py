@@ -91,7 +91,7 @@ def gen_assets(id):
 
 async def gen_voice(text,idx,id):
     text += '欢迎一键三连。'
-    communicate = edge_tts.Communicate(text, VOICE)  
+    communicate = edge_tts.Communicate(text, VOICE, rate = '-5%')  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
 def generate_video(id,summary):
