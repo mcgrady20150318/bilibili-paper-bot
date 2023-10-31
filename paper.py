@@ -234,7 +234,7 @@ async def upload_bilibili(id):
 if __name__ == '__main__':
     # ids = get_today_list()
     # print(ids)
-    ids = ['2310.18207']
+    ids = ['2310.18077']
     for id in ids:
         # try:
         generate_assets(id)
