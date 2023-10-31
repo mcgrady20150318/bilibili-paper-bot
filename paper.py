@@ -236,16 +236,16 @@ if __name__ == '__main__':
     # print(ids)
     ids = ['2310.18207']
     for id in ids:
-        try:
-            generate_assets(id)
-            generate_readme(id)
-            _,_,_,_,summary = get_upload_info(id)
-            generate_video(id,summary)
-            generate_index(id)
-            upload_bilibili(id)
+        # try:
+        generate_assets(id)
+        generate_readme(id)
+        _,_,_,_,summary = get_upload_info(id)
+        generate_video(id,summary)
+        generate_index(id)
+        upload_bilibili(id)
             
-        except:
-            print('exception')
+        # except:
+            # print('exception')
 
 
 
