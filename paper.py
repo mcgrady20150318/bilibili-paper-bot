@@ -183,9 +183,8 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    # ids = get_today_list()        
-    # print(ids)
-    ids = ['2310.17940']
+    ids = get_today_list()        
+    print(ids)
     for id in ids:
         r.rpush('paper',id)
         try:
