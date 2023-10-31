@@ -130,7 +130,11 @@ def generate_assets(id):
     print('...assets...')
 
 def get_upload_info(id):
-    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
+    txt = r.get(id+':'+"readme.txt")
+    with open('readme.txt','wb') as f:
+        f.write(txt)
+    # f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
+    f = codecs.open('./readme.txt','r',"utf-8")
     data = f.read()
     rex = r'<title>(.*?)</title>'
     title = re.findall(rex,data)[0]
@@ -234,14 +238,14 @@ async def upload_bilibili(id):
 if __name__ == '__main__':
     # ids = get_today_list()
     # print(ids)
-    ids = ['2310.18141']
+    ids = ['2310.18207']
     for id in ids:
         # try:
-        generate_assets(id)
-        generate_readme(id)
-        _,_,_,_,summary = get_upload_info(id)
-        generate_video(id,summary)
-        generate_index(id)
+        # generate_assets(id)
+        # generate_readme(id)
+        # _,_,_,_,summary = get_upload_info(id)
+        # generate_video(id,summary)
+        # generate_index(id)
         sync(upload_bilibili(id))
             
         # except:
