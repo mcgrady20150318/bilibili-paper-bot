@@ -154,7 +154,7 @@ def get_upload_info(id):
     comment = re.findall(rex,data)[0]
     print(comment)
     describe = "彩蛋：" + comment + "\n" + "论文简述：" + speech + "\n\n"  + "引导阅读的问题：" + read + "\n" + "论文链接： " + url
-    return ctitle,title,describe,tags,speech
+    return ctitle,title,describe,tags,speech+read
 
 def generate_index(id):
     loader = PyMuPDFLoader('./'+id+'/'+id+'.pdf')
@@ -186,8 +186,8 @@ if __name__ == '__main__':
         try:
             generate_assets(id)
             generate_readme(id)
-            ctitle,title,describe,tags,speech = get_upload_info(id)
-            generate_video(id,speech)
+            _,_,_,_,summary = get_upload_info(id)
+            generate_video(id,summary)
             generate_index(id)
         except:
             print('exception')
