@@ -19,7 +19,6 @@ from moviepy.editor import *
 import edge_tts
 import pdf2image
 import codecs
-from bilibili_api import sync, video_uploader, Credential
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -63,7 +62,7 @@ def generate_readme(id):
     f.close()
     with open('./'+id+'/readme.txt', 'rb') as f:
         file_content = f.read()
-    r.set(id+':readme.txt',file_content)
+    r.set('bilibili:'+id+':readme.txt',file_content)
 
 def get_time_count(audio_file):
     audio = MP3(audio_file)
@@ -117,7 +116,7 @@ def generate_video(id,summary):
     video_clip.write_videofile('./'+id+'/video/'+id+'.mp4',codec='libx264')
     with open('./'+id+'/video/'+id+'.mp4', 'rb') as f:
         file_content = f.read()
-    r.set(id+':'+id+".mp4",file_content)
+    r.set('bilibili:'+id+':'+id+".mp4",file_content)
     print('...generate video done...')
     
 def generate_assets(id):
@@ -126,15 +125,11 @@ def generate_assets(id):
     gen_assets(id)
     with open('./'+id+'/assets/0.jpg', 'rb') as f:
         file_content = f.read()
-    r.set(id+':cover.jpg',file_content)
+    r.set('bilibili:'+id+':cover.jpg',file_content)
     print('...assets...')
 
 def get_upload_info(id):
-    txt = r.get(id+':'+"readme.txt")
-    with open('readme.txt','wb') as f:
-        f.write(txt)
-    # f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
-    f = codecs.open('./readme.txt','r',"utf-8")
+    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
     data = f.read()
     rex = r'<title>(.*?)</title>'
     title = re.findall(rex,data)[0]
@@ -184,72 +179,22 @@ def get_today_list(day=0):
     arxivids = [paper for paper in paperlist if paper not in ids]
     return arxivids
 
-async def upload_bilibili(id):
-    ctitle,title,describe,tags,summary = get_upload_info(id)
+def set_status(id):
+    r.set('bilibili:'+id+":upload",0)
 
-    video = r.get(id+':'+id+".mp4")
-    with open('0.mp4','wb') as f:
-        f.write(video)
-    
-    cover = r.get(id+':cover.jpg')
-    with open('0.jpg','wb') as f:
-        f.write(cover)
-
-    sessdata = r.get('bilibili:sessdata').decode()
-    bili_jct = r.get('bilibili:bili_jct').decode()
-    buvid3 = r.get('bilibili:buvid3').decode()
-
-    credential = Credential(sessdata=sessdata, bili_jct=bili_jct, buvid3=buvid3)
-    # print(credential.check_valid())
-
-    meta = {
-        "act_reserve_create": 0,
-        "copyright": 1,
-        "source": "",
-        "desc": describe,
-        "desc_format_id": 0, 
-        "dynamic": "",
-        "interactive": 0,
-        "no_reprint": 1,
-        "open_elec": 0,
-        "origin_state": 0,
-        "subtitles": {
-            "lan": "",
-            "open": 0,
-        },
-        "tag": tags,
-        "tid": 231,
-        "title": ctitle,
-        "up_close_danmaku": False,
-        "up_close_reply": False,
-        "up_selection_reply": False,
-        "dtime": 0
-    }
-    page = video_uploader.VideoUploaderPage(path = '0.mp4', title = ctitle, description = describe)
-    uploader = video_uploader.VideoUploader([page], meta, credential,cover='0.jpg')
-
-    @uploader.on("__ALL__")
-    async def ev(data):
-        print(data)
-
-    await uploader.start()
-    print('...bilibili upload done...')
-    
 if __name__ == '__main__':
-    # ids = get_today_list()
-    # print(ids)
-    ids = ['2310.18207']
+    ids = get_today_list()
+    print(ids)
     for id in ids:
-        # try:
-        # generate_assets(id)
-        # generate_readme(id)
-        # _,_,_,_,summary = get_upload_info(id)
-        # generate_video(id,summary)
-        # generate_index(id)
-        sync(upload_bilibili(id))
-            
-        # except:
-            # print('exception')
+        try:
+            generate_assets(id)
+            generate_readme(id)
+            _,_,_,_,summary = get_upload_info(id)
+            generate_video(id,summary)
+            generate_index(id)
+            set_status(id)
+        except:
+            print('exception')
 
 
 
