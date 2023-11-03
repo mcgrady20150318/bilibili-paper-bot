@@ -51,7 +51,7 @@ def get_paper_info(id,max_results=1):
 def generate_readme(id):
     title,abstract  = get_paper_info(id)
     f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
-    prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",严格按照如下xml格式生成内容，<ctitle>这里生成一个吸引读者的中文专业标题</ctitle> ,回车，<describe>这里生成一段350字左右的中文论文解读</describe>，回车，<problem>这里生成1个引导读者阅读的问题</problem>，回车，<tags>这里生成5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
+    prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",严格按照如下xml格式生成内容，<ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle> ,回车，<describe>这里生成一段350字左右的中文论文解读</describe>，回车，<problem>这里生成1个引导读者阅读的问题</problem>，回车，<tags>这里生成5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
     PROMPT = PromptTemplate(template=prompt_template, input_variables=[])
     chain = LLMChain(llm=llm, prompt=PROMPT)
     output = chain.run(text='')
