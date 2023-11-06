@@ -19,6 +19,11 @@ from moviepy.editor import *
 import edge_tts
 import pdf2image
 import codecs
+from langchain.prompts import ChatPromptTemplate
+from langchain.chat_models.openai import ChatOpenAI
+from pydantic import BaseModel, Field
+from langchain.output_parsers import PydanticOutputParser
+import json
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -28,6 +33,12 @@ llm = OpenAI(max_tokens=10000,model_name='gpt-3.5-turbo-16k')
 embeddings = OpenAIEmbeddings()
 r = redis.from_url(redis_url)
 VOICE = "zh-CN-XiaoyiNeural"  
+
+class Paper(BaseModel):
+    ctitle: str = Field(description="吸引读者的中文标题")
+    introduction: str = Field(description="以第三人称撰写一段300字左右的中文解读")
+    question: list[str] = Field(description="生成3个引导读者阅读的问题")
+    tags: list[str] = Field(description="生成5个中文标签")
 
 def get_paper_info(id,max_results=1):
 
@@ -50,19 +61,18 @@ def get_paper_info(id,max_results=1):
 
 def generate_readme(id):
     title,abstract  = get_paper_info(id)
-    f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
-    prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",严格按照如下xml格式生成内容，<ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle> ,回车，<describe>这里生成一段350字左右的中文论文解读</describe>，回车，<problem>这里生成1个引导读者阅读的问题</problem>，回车，<tags>这里生成5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
-    PROMPT = PromptTemplate(template=prompt_template, input_variables=[])
-    chain = LLMChain(llm=llm, prompt=PROMPT)
-    output = chain.run(text='')
-    f.write(output+'\n')
-    f.write("<title>"+ title+"</title>\n")
-    f.write("<url>https://arxiv.org/pdf/" + id+"</url>\n")
-    f.write("<comment>可以试试/ask + 你的提问和本篇论文进行交流</comment>")
-    f.close()
-    with open('./'+id+'/readme.txt', 'rb') as f:
-        file_content = f.read()
-    r.set('bilibili:'+id+':readme.txt',file_content)
+    output_parser = PydanticOutputParser(pydantic_object=Paper)
+    question =  """现在你是一个人工智能学者，{format_instructions}：请根据论文摘要```{abstract}```,用中文生成内容如下："""
+    PROMPT = ChatPromptTemplate.from_template(question)
+    messages = PROMPT.format_messages(abstract=abstract,format_instructions=output_parser.get_format_instructions())
+    chat = ChatOpenAI(max_tokens=10000,model_name='gpt-3.5-turbo-16k')
+    response = chat(messages)
+    info = json.loads(response.content)
+    info['title'] = title
+    info['url'] = 'https://arxiv.org/pdf/' + id
+    info['comment'] = '可以试试/ask + 你的提问和本篇论文进行交流'
+    info = json.dumps(info)
+    r.set('bilibili:'+id+':readme.txt',info)
 
 def get_time_count(audio_file):
     audio = MP3(audio_file)
@@ -128,31 +138,11 @@ def generate_assets(id):
     r.set('bilibili:'+id+':cover.jpg',file_content)
     print('...assets...')
 
-def get_upload_info(id):
-    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
-    data = f.read()
-    rex = r'<title>(.*?)</title>'
-    title = re.findall(rex,data)[0]
-    print(title)
-    rex = r'<ctitle>(.*?)</ctitle>'
-    ctitle = re.findall(rex,data)[0]
-    print(ctitle)
-    rex = r'<tags>(.*?)</tags>'
-    # taglist = ['人工智能','机器学习']
-    tags = re.findall(rex,data)[0]
-    tags = tags.replace(' ',',')
-    print(tags)
-    rex = r'<describe>(.*?)</describe>'
-    speech = re.findall(rex,data)[0]
-    print(speech)
-    rex = r'<url>(.*?)</url>'
-    url = re.findall(rex,data)[0]
-    print(url)
-    rex = r'<comment>(.*?)</comment>'
-    comment = re.findall(rex,data)[0]
-    print(comment)
-    describe = "论文标题：" + title + "\n" + "论文简述：" + speech + "\n" + "论文链接： " + url
-    return ctitle,title,describe,tags,speech
+def get_intro(id):
+    info = r.get('bilibili:'+id+':readme.txt')
+    info = json.loads(info)
+    intro = info['introduction']
+    return intro
 
 def generate_index(id):
     loader = PyMuPDFLoader('./'+id+'/'+id+'.pdf')
@@ -187,8 +177,8 @@ if __name__ == '__main__':
         try:
             generate_assets(id)
             generate_readme(id)
-            _,_,_,_,summary = get_upload_info(id)
-            generate_video(id,summary)
+            intro = get_intro(id)
+            generate_video(id,intro)
             generate_index(id)
             set_status(id)
         except:
