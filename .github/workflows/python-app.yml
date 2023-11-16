@@ -23,7 +23,7 @@ jobs:
         python-version: '3.11' 
 
     - name: Install Dependence
-      run: pip install requests langchain openai==0.28.1 pymupdf tiktoken datetime redis asyncio mutagen moviepy arxiv edge_tts pdf2image bilibili-api-python
+      run: pip install requests langchain openai==0.28.1 pymupdf tiktoken datetime redis asyncio mutagen moviepy arxiv edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0
 
     - name: Run paper.py
       run: python ./paper.py
