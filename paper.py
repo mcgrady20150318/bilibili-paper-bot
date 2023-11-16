@@ -130,6 +130,10 @@ def generate_video(id):
         get_poster(text,id,idx)
         asyncio.run(gen_voice(text,idx,id))
 
+    with open('./'+id+'/poster/0.jpg', 'rb') as f:
+        file_content = f.read()
+    r.set('bilibili:'+id+':cover.jpg',file_content)
+
     image_folder = './'+id+'/poster'
     audio_folder = './'+id+'/audio'
     image_files = os.listdir(image_folder)
@@ -161,9 +165,6 @@ def generate_assets(id):
     download_pdf(id)
     print('...download...')
     gen_assets(id)
-    with open('./'+id+'/poster/0.jpg', 'rb') as f:
-        file_content = f.read()
-    r.set('bilibili:'+id+':cover.jpg',file_content)
     print('...assets...')
 
 def get_texts(id):
