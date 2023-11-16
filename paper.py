@@ -157,7 +157,6 @@ def generate_video(id):
     print('...generate video done...')
     set_status(id)
 
-
 def generate_assets(id):
     download_pdf(id)
     print('...download...')
@@ -196,8 +195,8 @@ if __name__ == '__main__':
     # print(ids)
     ids = ['2311.08402']
     for id in ids:
-        r.rpush('paper',id)
-        try:
-            generate_video(id)
-        except:
-            print('exception')
+        # r.rpush('paper',id)
+        # try:
+        generate_video(id)
+        # except:
+            # print('exception')
