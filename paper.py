@@ -19,6 +19,9 @@ from moviepy.editor import *
 import edge_tts
 import pdf2image
 import codecs
+from nider.core import Font
+from nider.core import Outline
+from nider.models import Content, Header, Image
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -75,6 +78,7 @@ def download_pdf(id):
     if not os.path.exists('./'+id):
         os.mkdir('./'+id)
         os.mkdir('./'+id+'/assets')
+        os.mkdir('./'+id+'/poster')
         os.mkdir('./'+id+'/audio')
         os.mkdir('./'+id+'/video')
     output_path = './' + id + '/' + id + '.pdf'
@@ -89,78 +93,86 @@ def gen_assets(id):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
 
+def get_poster(text,id,idx):
+    header = Header(text=text,
+                    text_width=80,
+                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=30),
+                    align='center',
+                    color='#000100',
+                    )
+    content = Content(header=header)
+    img = Image(content,fullpath='./'+id+'/poster/'+str(idx) + '.png')
+    img.draw_on_image('./'+id+'/assets/'+ str(idx) +'.jpg')
+    os.rename('./'+id+'/poster/'+str(idx) + '.png','./'+id+'/poster/'+str(idx) + '.jpg')
+
+def get_time_count(audio_file):
+    audio = MP3(audio_file)
+    time_count = audio.info.length
+    return time_count
+
 async def gen_voice(text,idx,id):
-    text = "大家好！这是paperweekly机器人推荐的今日AI热文。" + text 
-    text += '欢迎一键三连。'
-    communicate = edge_tts.Communicate(text, VOICE, rate = '-8%')  
+    communicate = edge_tts.Communicate(text, VOICE, rate = '-5%')  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
-def generate_video(id,summary):
-    asyncio.run(gen_voice(summary,0,id))
-    print('...audio...')
-    images = os.listdir('./'+id+'/assets')
-    images.sort(key=lambda x:int(x[:-4]))
-    image_files = ['./'+id+'/assets/' + a for a in images][:8]
-    audios = os.listdir('./'+id+'/audio')
-    audios.sort(key=lambda x:int(x[:-4]))
-    audio_files = ['./'+id+'/audio/' + a for a in audios]
+def generate_video(id):
+    generate_readme(id)
+    generate_assets(id)
+    s = get_texts(id)
+    start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
+    end = '欢迎一键三连。'
+    N = len(os.listdir('./'+id+'/assets/'))
+    if N > 12:
+        N = 12
+    n = N - 2
+    step = int(len(s)/n+1)
+    texts = [start] + [s[i:i+step] for i in range(0, len(s), step)] + [end]
+    for idx,text in enumerate(texts):
+        get_poster(text,id,idx)
+        asyncio.run(gen_voice(text,idx,id))
 
-    total_time = 0
-
-    for audio_file in audio_files:
-        total_time += get_time_count(audio_file)
-
-    image_clip = ImageSequenceClip(image_files, fps=len(image_files)/total_time)
-    audio_clip = concatenate_audioclips([AudioFileClip(c) for c in audio_files])
-    video_clip = image_clip.set_audio(audio_clip)
-    video_clip.write_videofile('./'+id+'/video/'+id+'.mp4',codec='libx264')
-    with open('./'+id+'/video/'+id+'.mp4', 'rb') as f:
+    image_folder = './'+id+'/poster'
+    audio_folder = './'+id+'/audio'
+    image_files = os.listdir(image_folder)
+    audio_files = os.listdir(audio_folder)
+    image_files.sort(key=lambda x:int(x[:-4]))
+    audio_files.sort(key=lambda x:int(x[:-4]))
+    audio_clips = concatenate_audioclips([AudioFileClip(os.path.join(audio_folder,c)) for c in audio_files])
+    image_clips = []
+    for idx, image in enumerate(image_files[:N]):
+        duration = get_time_count(os.path.join(audio_folder, audio_files[idx]))
+        _image = ImageClip(os.path.join(image_folder, image)).set_duration(duration)
+        image_clips.append(_image)
+    video = concatenate_videoclips(image_clips)
+    final_video = video.set_audio(audio_clips)
+    audio_clips.write_audiofile('./'+id+'/'+id+'.mp3')
+    with open('./'+id+'/'+id+'.mp3', 'rb') as f:
+        file_content = f.read()
+    r.set('bilibili:'+id+':'+id+".mp3",file_content)
+    print('...generate radio done...')
+    final_video.write_videofile('./'+id+'/'+id+'.mp4',codec='libx264',fps=24)
+    with open('./'+id+'/'+id+'.mp4', 'rb') as f:
         file_content = f.read()
     r.set('bilibili:'+id+':'+id+".mp4",file_content)
+    r.rpush('cached_ids',id)
     print('...generate video done...')
-    
+    set_status(id)
+
+
 def generate_assets(id):
     download_pdf(id)
     print('...download...')
     gen_assets(id)
-    with open('./'+id+'/assets/0.jpg', 'rb') as f:
+    with open('./'+id+'/poster/0.jpg', 'rb') as f:
         file_content = f.read()
     r.set('bilibili:'+id+':cover.jpg',file_content)
     print('...assets...')
 
-def get_upload_info(id):
+def get_texts(id):
     f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
     data = f.read()
-    rex = r'<title>(.*?)</title>'
-    title = re.findall(rex,data)[0]
-    print(title)
-    rex = r'<ctitle>(.*?)</ctitle>'
-    ctitle = re.findall(rex,data)[0]
-    print(ctitle)
-    rex = r'<tags>(.*?)</tags>'
-    # taglist = ['人工智能','机器学习']
-    tags = re.findall(rex,data)[0]
-    tags = tags.replace(' ',',')
-    print(tags)
     rex = r'<describe>(.*?)</describe>'
-    speech = re.findall(rex,data)[0]
-    print(speech)
-    rex = r'<url>(.*?)</url>'
-    url = re.findall(rex,data)[0]
-    print(url)
-    rex = r'<comment>(.*?)</comment>'
-    comment = re.findall(rex,data)[0]
-    print(comment)
-    describe = "论文标题：" + title + "\n" + "论文简述：" + speech + "\n" + "论文链接： " + url
-    return ctitle,title,describe,tags,speech
-
-def generate_index(id):
-    loader = PyMuPDFLoader('./'+id+'/'+id+'.pdf')
-    docs = loader.load()
-    text_splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    texts = text_splitter.split_documents(docs)
-    rds = Redis.from_documents(texts,embeddings,redis_url=redis_url,index_name=id)
-    r.rpush('cached_ids',id)
+    texts = re.findall(rex,data)[0]
+    return texts
 
 def get_today_list(day=0):
     ids = r.lrange('cached_ids',0,-1)
@@ -180,16 +192,12 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    ids = get_today_list()        
-    print(ids)
+    # ids = get_today_list()        
+    # print(ids)
+    ids = ['2311.08402']
     for id in ids:
         r.rpush('paper',id)
         try:
-            generate_assets(id)
-            generate_readme(id)
-            _,_,_,_,summary = get_upload_info(id)
-            generate_video(id,summary)
-            generate_index(id)
-            set_status(id)
+            generate_video(id)
         except:
             print('exception')
