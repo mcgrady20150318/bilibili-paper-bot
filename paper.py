@@ -115,8 +115,8 @@ async def gen_voice(text,idx,id):
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
 def generate_video(id):
-    generate_readme(id)
     generate_assets(id)
+    generate_readme(id)
     s = get_texts(id)
     start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
     end = '欢迎一键三连。'
