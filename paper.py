@@ -111,7 +111,7 @@ def get_time_count(audio_file):
     return time_count
 
 async def gen_voice(text,idx,id):
-    communicate = edge_tts.Communicate(text, VOICE, rate = '-2%')  
+    communicate = edge_tts.Communicate(text, VOICE)  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
 def generate_video(id):
