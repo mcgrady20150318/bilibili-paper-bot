@@ -22,6 +22,7 @@ import codecs
 from nider.core import Font
 from nider.core import Outline
 from nider.models import Content, Header, Image
+from snownlp import SnowNLP
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -114,18 +115,38 @@ async def gen_voice(text,idx,id):
     communicate = edge_tts.Communicate(text, VOICE)  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
+def get_text_seq(s,N):
+    start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
+    end = '欢迎一键三连。'
+    _texts = SnowNLP(s).sentences
+    if N > 10:
+        N = 10
+    pages = N - 2
+    n = len(_texts)
+    texts = []
+    if n >= 2 * pages:
+        for i in range(0,2*(pages-1),2):
+            texts.append(_texts[i] + _texts[i+1])
+        texts.append("".join(_texts[2*(pages-1)-n:]))
+    if n >= pages and n < 2 * pages:
+        delta = n - pages
+        for i in range(0,2*(delta-1),2):
+            texts.append(_texts[i] + _texts[i+1])
+        for i in range(2*(delta-1),n,1):
+            texts.append(_texts[i])
+    if n < pages:
+        N = n
+        for i in range(0,n,1):
+            texts.append(_texts[i])
+    return [start] + texts + [end]
+
 def generate_video(id):
     generate_assets(id)
     generate_readme(id)
     s = get_texts(id)
-    start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
-    end = '欢迎一键三连。'
     N = len(os.listdir('./'+id+'/assets/'))
-    if N > 12:
-        N = 12
-    n = N - 2
-    step = int(len(s)/n+1)
-    texts = [start] + [s[i:i+step] for i in range(0, len(s), step)] + [end]
+    texts = get_text_seq(s,N)
+    
     for idx,text in enumerate(texts):
         get_poster(text,id,idx)
         asyncio.run(gen_voice(text,idx,id))
@@ -192,10 +213,11 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    ids = get_today_list()        
-    print(ids)
+    # ids = get_today_list()        
+    # print(ids)
+    ids = ['2311.10709']
     for id in ids:
-        r.rpush('paper',id)
+        # r.rpush('paper',id)
         try:
             generate_video(id)
         except:
