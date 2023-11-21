@@ -213,10 +213,11 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    ids = get_today_list()        
-    print(ids)
+    # ids = get_today_list()        
+    # print(ids)
+    ids = ['2311.10982']
     for id in ids:
-        r.rpush('paper',id)
+        # r.rpush('paper',id)
         try:
             generate_video(id)
         except:
