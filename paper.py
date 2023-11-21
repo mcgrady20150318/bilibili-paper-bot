@@ -119,8 +119,8 @@ def get_text_seq(s,N):
     start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
     end = '欢迎一键三连。'
     _texts = SnowNLP(s).sentences
-    if N > 10:
-        N = 10
+    if N > 14:
+        N = 14
     pages = N - 2
     n = len(_texts)
     texts = []
@@ -213,10 +213,12 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
 
 if __name__ == '__main__':
-    ids = get_today_list()        
-    print(ids)
+    # ids = get_today_list()        
+    # print(ids)
+    ids = [b'2311.10642', b'2311.10678', b'2311.10123', b'2311.10709', b'2311.10702', b'2311.10538', b'2311.10775', b'2311.11501', b'2311.12015', b'2311.12022', b'2311.11045', b'2311.10770', b'2311.10751', b'2311.10768', b'2311.10751', b'2311.11243', b'2311.10768', b'2311.11077']
     for id in ids:
-        r.rpush('paper',id)
+        # r.rpush('paper',id)
+        id = id.decode("utf-8")
         try:
             generate_video(id)
         except:
