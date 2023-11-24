@@ -23,6 +23,7 @@ from nider.core import Font
 from nider.core import Outline
 from nider.models import Content, Header, Image
 from snownlp import SnowNLP
+import PyPDF2
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -85,6 +86,13 @@ def download_pdf(id):
     output_path = './' + id + '/' + id + '.pdf'
     with open(output_path, 'wb') as file:
         file.write(response.content)
+    paper = ""
+    f = open('./' + id + '/' + id + '.pdf','rb')
+    reader = PyPDF2.PdfReader(f)
+    for i in range(len(reader.pages)):
+        page = reader.pages[i]
+        paper += page.extract_text()
+    r.set("bilibili:"+id+":paper.txt",paper)
 
 def gen_assets(id):
     output_dir = './'+id+'/assets/'
