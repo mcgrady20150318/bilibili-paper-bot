@@ -24,6 +24,7 @@ from nider.core import Outline
 from nider.models import Content, Header, Image
 from snownlp import SnowNLP
 import PyPDF2
+import time
 
 os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
 os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
@@ -227,5 +228,6 @@ if __name__ == '__main__':
         r.rpush('paper',id)
         try:
             generate_video(id)
+            time.sleep(10)
         except:
             print('exception')
