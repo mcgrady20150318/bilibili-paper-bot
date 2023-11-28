@@ -5,8 +5,8 @@ env:
   
 on:
   push:
-  schedule:
-    - cron: '*/30 0-11 * * *'
+  # schedule:
+  #   - cron: '*/30 0-11 * * *'
     
 
 jobs:
