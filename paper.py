@@ -45,7 +45,7 @@ slide_prompt = '''
 readme_prompt = '''
     请基于论文内容，严格按照下面的xml格式生成内容:
     <ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle>
-    <describe>这里生成一段350字左右的中文论文解读</describe>
+    <describe>这里生成一段200字左右的中文论文解读</describe>
     <tags>这里生成5个中文标签，并且以空格隔开</tags>，生成结果如下：
 '''
 
@@ -237,7 +237,8 @@ def generate_video(id):
     gen_slide_pdf(id)
     gen_slide_assets(id)
     s = get_texts(id)
-    N = len(os.listdir('./'+id+'/slide/'))
+    print(os.listdir('./'+id+'/slide/'))
+    N = len(os.listdir('./'+id+'/slide/')) - 1
     texts = get_text_seq(s,N)
     
     for idx,text in enumerate(texts):
