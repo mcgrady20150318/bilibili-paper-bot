@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Install poppler
-      run: sudo apt-get install poppler-utils
+      run: sudo apt-get install poppler-utils --fix-missing
     - name: Install pdflatex
       run: sudo apt-get install texlive-latex-base
     - uses: actions/checkout@v3
