@@ -37,14 +37,14 @@ slide_prompt = '''
     <contribution>一段话描述研究贡献</contribution>
     <method>一段话描述研究方法</method>
     <experiment>一段话描述重要实验结果</experiment>
-    <conclusion>一段话描述结论</conclusion>
+    <conclusion>一段话描述结论</conclusion>，生成结果如下：
 '''
 
 readme_prompt = '''
     请基于论文内容，严格按照下面的xml格式生成内容:
     <ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle>
     <describe>这里生成一段350字左右的中文论文解读</describe>
-    <tags>这里生成5个中文标签，并且以空格隔开</tags>
+    <tags>这里生成5个中文标签，并且以空格隔开</tags>，生成结果如下：
 '''
 
 def download_pdf(id):
