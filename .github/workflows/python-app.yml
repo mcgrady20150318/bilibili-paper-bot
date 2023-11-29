@@ -17,7 +17,7 @@ jobs:
     # - name: Install poppler
     #   run: brew install poppler
     - name: Install basictex
-      run: brew install basictex & source ~/.bashrc
+      run: brew install basictex & source ~/.bashrc & echo $('which pdflatex')
     - uses: actions/checkout@v3
     - name: Setup Python environment
       uses: actions/setup-python@v4
