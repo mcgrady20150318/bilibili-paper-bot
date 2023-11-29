@@ -159,8 +159,8 @@ def gen_slide(id):
 def gen_slide_pdf(id):
     os.chdir('./'+id+'/slide/')
     os.system('pdflatex main.tex')
-    os.system('mv main.pdf ../')
-    os.system('rm *')
+    # os.system('mv main.pdf ../')
+    # os.system('rm *')
 
 def gen_slide_assets(id):
     output_dir = './'+id+'/slide/'
