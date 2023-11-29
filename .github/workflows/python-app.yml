@@ -17,19 +17,18 @@ jobs:
     # - name: Install poppler
     #   run: brew install poppler
     - name: Install basictex
-      run: brew cask install basictex &
-           echo pdflatex -h
-    # - uses: actions/checkout@v3
-    # - name: Setup Python environment
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: '3.8' 
+      run: brew cask install basictex 
+    - uses: actions/checkout@v3
+    - name: Setup Python environment
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
 
     # - name: Install Dependence
     #   run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
 
-    # - name: Run paper.py
-    #   run: python ./paper.py
+    - name: Run paper.py
+      run: python ./test.py
 
 
 
