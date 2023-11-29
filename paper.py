@@ -291,7 +291,7 @@ def set_status(id):
 if __name__ == '__main__':
     # ids = get_today_list()        
     # print(ids)
-    ids = ['2311.16867']
+    ids = ['2310.11511']
     for id in ids:
         # r.rpush('paper',id)
         # try:
