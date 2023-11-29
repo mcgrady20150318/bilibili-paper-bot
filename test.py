@@ -1,3 +1,2 @@
 import os
-os.system('source ~/.bashrc')
-os.system('pdflatex -h')
+os.system('/Library/TeX/texbin/pdflatex -h')
