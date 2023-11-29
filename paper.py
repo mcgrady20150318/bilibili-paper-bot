@@ -222,8 +222,9 @@ def get_text_seq(s,N):
 def get_texts(id):
     f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
     data = f.read()
-    rex = r'<describe>(.*?)</describe>'
-    texts = re.findall(rex,data)[0]
+    texts = re.search(r'<describe>(.*?)</describe>', data, re.DOTALL)
+    if texts:
+        texts = texts.group(1)
     return texts
 
 def generate_video(id):
