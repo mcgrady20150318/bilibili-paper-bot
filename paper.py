@@ -237,8 +237,8 @@ def generate_video(id):
     gen_slide_pdf(id)
     gen_slide_assets(id)
     s = get_texts(id)
-    print(os.listdir('./'+id+'/slide/'))
-    N = len(os.listdir('./'+id+'/slide/'))
+    print(os.listdir('./'+id+'/poster/'))
+    N = len(os.listdir('./'+id+'/poster/'))
     texts = get_text_seq(s,N)
     
     for idx,text in enumerate(texts):
@@ -249,7 +249,7 @@ def generate_video(id):
         file_content = f.read()
     r.set('bilibili:'+id+':cover.jpg',file_content)
 
-    image_folder = './'+id+'/slide'
+    image_folder = './'+id+'/poster'
     audio_folder = './'+id+'/audio'
     image_files = os.listdir(image_folder)
     audio_files = os.listdir(audio_folder)
