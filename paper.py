@@ -1,18 +1,9 @@
 import requests
 import os
-from langchain.document_loaders import PyMuPDFLoader
-from langchain.embeddings.openai import OpenAIEmbeddings
-from typing import Any
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.vectorstores.redis import Redis
-from langchain.llms import OpenAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
 import datetime
 import re
 import pickle
 import redis
-import arxiv
 import asyncio
 from mutagen.mp3 import MP3
 from moviepy.editor import *
@@ -23,57 +14,37 @@ from nider.core import Font
 from nider.core import Outline
 from nider.models import Content, Header, Image
 from snownlp import SnowNLP
-import PyPDF2
 import time
+from pathlib import Path
+from openai import OpenAI
 
-os.environ["OPENAI_API_KEY"] = os.getenv('OPENAI_API_KEY')
-os.environ['OPENAI_API_BASE'] = 'https://api.aiproxy.io/v1'
 redis_url = os.getenv('REDIS_URL')
+api_key = "Y2w1MzBraHAyazFhZ3NiY3B2aTA6bXNrLUZYYVRtUEVYWkhRMjZCS0ZSR2dtbmR6d3VCMEI="
 
-llm = OpenAI(max_tokens=10000,model_name='gpt-3.5-turbo-16k')
-embeddings = OpenAIEmbeddings()
-r = redis.from_url(redis_url)
-VOICE = "zh-CN-XiaoyiNeural"  
+client = OpenAI(
+    api_key=api_key,
+    base_url="https://api.moonshot.cn/v1",
+)
 
-def get_paper_info(id,max_results=1):
+VOICE = "zh-CN-XiaoyiNeural"
 
-    big_slow_client = arxiv.Client(
-        page_size = 1,
-        delay_seconds = 10,
-        num_retries = 1
-    )
+slide_prompt = '''
+    请基于论文内容，严格按照下面的xml格式生成内容，要求均用英语描述:
+    <title>英文标题</title>
+    <author>作者姓名，以逗号隔开</author>
+    <motivation>研究动机</motivation>
+    <contribution>研究贡献</contribution>
+    <method>研究方法</method>
+    <experiment>重要实验结果</experiment>
+    <conclusion>结论</conclusion>
+'''
 
-    search = arxiv.Search(
-        id_list=[id],
-        max_results = max_results,
-    )
-
-    result = big_slow_client.results(search)
-    result = list(result)[0]
-    title = result.title
-    abstract = result.summary
-    return title,abstract.replace('\n',' ').replace('{','').replace('}','')
-
-def generate_readme(id):
-    title,abstract  = get_paper_info(id)
-    f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
-    prompt_template =  """现在你是一个人工智能学者，请根据论文摘要"%s",严格按照如下xml格式生成内容，<ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle> ,回车，<describe>这里生成一段350字左右的中文论文解读</describe>，回车，<problem>这里生成1个引导读者阅读的问题</problem>，回车，<tags>这里生成5个中文标签，并且以空格隔开</tags>，回车，如下：""" %(abstract)
-    PROMPT = PromptTemplate(template=prompt_template, input_variables=[])
-    chain = LLMChain(llm=llm, prompt=PROMPT)
-    output = chain.run(text='')
-    f.write(output+'\n')
-    f.write("<title>"+ title+"</title>\n")
-    f.write("<url>https://arxiv.org/pdf/" + id+"</url>\n")
-    f.write("<comment>可以试试/ask + 你的提问和本篇论文进行交流</comment>")
-    f.close()
-    with open('./'+id+'/readme.txt', 'rb') as f:
-        file_content = f.read()
-    r.set('bilibili:'+id+':readme.txt',file_content)
-
-def get_time_count(audio_file):
-    audio = MP3(audio_file)
-    time_count = audio.info.length
-    return time_count
+readme_prompt = '''
+    请基于论文内容，严格按照下面的xml格式生成内容:
+    <ctitle>这里生成一个吸引读者的中文专业标题，要求有信息量</ctitle>
+    <describe>这里生成一段350字左右的中文论文解读</describe>
+    <tags>这里生成5个中文标签，并且以空格隔开</tags>
+'''
 
 def download_pdf(id):
     url = 'http://arxiv.org/pdf/'+id+'.pdf'
@@ -81,21 +52,62 @@ def download_pdf(id):
     if not os.path.exists('./'+id):
         os.mkdir('./'+id)
         os.mkdir('./'+id+'/assets')
-        os.mkdir('./'+id+'/poster')
+        os.mkdir('./'+id+'/slide')
         os.mkdir('./'+id+'/audio')
         os.mkdir('./'+id+'/video')
+        os.mkdir('./'+id+'/poster')
     output_path = './' + id + '/' + id + '.pdf'
     with open(output_path, 'wb') as file:
         file.write(response.content)
-    paper = ""
-    f = open('./' + id + '/' + id + '.pdf','rb')
-    reader = PyPDF2.PdfReader(f)
-    for i in range(len(reader.pages)):
-        page = reader.pages[i]
-        paper += page.extract_text()
-    r.set("bilibili:"+id+":paper.txt",paper)
 
-def gen_assets(id):
+def get_content(id):
+    filepath = './' + id + '/' + id + '.pdf'
+    file_object = client.files.create(file=Path(filepath), purpose="file-extract")
+    file_content = client.files.content(file_id=file_object.id).text
+    f = open('./' + id + '/paper.txt','w')
+    f.write(file_content)
+    f.close()
+    r.set("bilibili:"+id+":paper.txt",file_content)
+
+def gen_slide_content(id):
+    content = open('./' + id + '/paper.txt','r').read()
+    if len(content) > 10000:
+        content = content[:10000]
+    f = codecs.open('./'+id+'/slide.txt','w',"utf-8")
+    messages=[
+        {"role": "system","content": content},
+        {"role": "user", "content": slide_prompt},
+    ]
+    completion = client.chat.completions.create(
+        model="moonshot-v1-128k",
+        messages=messages,
+        temperature=0.3,
+    )
+    output = completion.choices[0].message.content
+    r.set("bilibili:"+id+":slide.txt",output)
+    f.write(output)
+    f.close()
+
+def gen_readme_content(id):
+    content = open('./' + id + '/paper.txt','r').read()
+    if len(content) > 10000:
+        content = content[:10000]
+    f = codecs.open('./'+id+'/readme.txt','w',"utf-8")
+    messages=[
+        {"role": "system","content": content},
+        {"role": "user", "content": readme_prompt},
+    ]
+    completion = client.chat.completions.create(
+        model="moonshot-v1-32k",
+        messages=messages,
+        temperature=0.3,
+    )
+    output = completion.choices[0].message.content
+    r.set("bilibili:"+id+":readme.txt",output)
+    f.write(output)
+    f.close()
+
+def gen_paper_assets(id):
     output_dir = './'+id+'/assets/'
     os.makedirs(output_dir, exist_ok=True)
     pages = pdf2image.convert_from_path('./'+id+'/'+id+'.pdf')
@@ -103,16 +115,69 @@ def gen_assets(id):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
 
+def gen_item(content):
+    texts = content.split('.')[:-1]
+    result = ''
+    for text in texts:
+        result += '\item ' + text.lstrip() + '.' + '\n'
+    return result
+
+def gen_slide(id):
+    f = open('./'+id+'/slide.txt','r')
+    data = f.read()
+    rex = r'<title>(.*?)</title>'
+    title = re.findall(rex,data)[0]
+    rex = r'<author>(.*?)</author>'
+    author = re.findall(rex,data)[0]
+    rex = r'<motivation>(.*?)</motivation>'
+    motivation = re.findall(rex,data)[0]
+    rex = r'<contribution>(.*?)</contribution>'
+    contribution = re.findall(rex,data)[0]
+    rex = r'<method>(.*?)</method>'
+    method = re.findall(rex,data)[0]
+    rex = r'<experiment>(.*?)</experiment>'
+    experiment = re.findall(rex,data)[0]
+    rex = r'<conclusion>(.*?)</conclusion>'
+    conclusion = re.findall(rex,data)[0]
+    f.close()
+    f = open('template.tex','r')
+    data = f.read()
+    data = data.replace('TITLE',title)
+    data = data.replace('AUTHOR',author)
+    data = data.replace('MOTIVATION',gen_item(motivation))
+    data = data.replace('CONTRIBUTION',gen_item(contribution))
+    data = data.replace('METHOD',gen_item(method))
+    data = data.replace('EXPERIMENT',gen_item(experiment))
+    data = data.replace('CONCLUSION',gen_item(conclusion))
+    f.close()
+    f = open('./'+id+'/slide/main.tex','w')
+    f.write(data)
+    f.close()
+
+def gen_slide_pdf(id):
+    os.chdir(id+'/slide/')
+    os.system('pdflatex main.tex')
+    os.system('mv main.pdf ../')
+    os.system('rm *')
+
+def gen_slide_assets(id):
+    output_dir = './'+id+'/slide/'
+    os.makedirs(output_dir, exist_ok=True)
+    pages = pdf2image.convert_from_path('./'+id+'/main.pdf')
+    for i, page in enumerate(pages):
+        image_path = os.path.join(output_dir, f'{i}.jpg')
+        page.save(image_path, 'JPEG')
+
 def get_poster(text,id,idx):
     header = Header(text=text,
-                    text_width=80,
-                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=30),
+                    text_width=60,
+                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=25),
                     align='center',
                     color='#000100',
                     )
     content = Content(header=header)
     img = Image(content,fullpath='./'+id+'/poster/'+str(idx) + '.png')
-    img.draw_on_image('./'+id+'/assets/'+ str(idx) +'.jpg')
+    img.draw_on_image('./'+id+'/slide/'+ str(idx) +'.jpg')
     os.rename('./'+id+'/poster/'+str(idx) + '.png','./'+id+'/poster/'+str(idx) + '.jpg')
 
 def get_time_count(audio_file):
@@ -149,22 +214,36 @@ def get_text_seq(s,N):
             texts.append(_texts[i])
     return [start] + texts + [end]
 
+def get_texts(id):
+    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
+    data = f.read()
+    rex = r'<describe>(.*?)</describe>'
+    texts = re.findall(rex,data)[0]
+    return texts
+
 def generate_video(id):
-    generate_assets(id)
-    generate_readme(id)
+    download_pdf(id)
+    get_content(id)
+    gen_readme_content(id)
+    gen_slide_content(id)
+    gen_readme(id)
+    gen_slide(id)
+    gen_assets(id)
+    gen_slide_pdf(id)
+    gen_slide_assets(id)
     s = get_texts(id)
-    N = len(os.listdir('./'+id+'/assets/'))
+    N = len(os.listdir('./'+id+'/slide/'))
     texts = get_text_seq(s,N)
     
     for idx,text in enumerate(texts):
         get_poster(text,id,idx)
         asyncio.run(gen_voice(text,idx,id))
 
-    with open('./'+id+'/poster/0.jpg', 'rb') as f:
+    with open('./'+id+'/slide/0.jpg', 'rb') as f:
         file_content = f.read()
     r.set('bilibili:'+id+':cover.jpg',file_content)
 
-    image_folder = './'+id+'/poster'
+    image_folder = './'+id+'/slide'
     audio_folder = './'+id+'/audio'
     image_files = os.listdir(image_folder)
     audio_files = os.listdir(audio_folder)
@@ -191,19 +270,6 @@ def generate_video(id):
     print('...generate video done...')
     set_status(id)
 
-def generate_assets(id):
-    download_pdf(id)
-    print('...download...')
-    gen_assets(id)
-    print('...assets...')
-
-def get_texts(id):
-    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
-    data = f.read()
-    rex = r'<describe>(.*?)</describe>'
-    texts = re.findall(rex,data)[0]
-    return texts
-
 def get_today_list(day=0):
     ids = r.lrange('cached_ids',0,-1)
     ids = [id.decode("utf-8") for id in ids]
@@ -222,15 +288,16 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
     
 if __name__ == '__main__':
-    ids = get_today_list()        
-    print(ids)
+    # ids = get_today_list()        
+    # print(ids)
+    ids = ['2311.16867']
     for id in ids:
-        r.rpush('paper',id)
-        try:
-            generate_video(id)
-            time.sleep(10)
-        except:
-            print('exception')
+        # r.rpush('paper',id)
+        # try:
+        generate_video(id)
+        # time.sleep(10)
+        # except:
+        #     print('exception')
 
 
 
