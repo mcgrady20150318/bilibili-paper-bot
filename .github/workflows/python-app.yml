@@ -18,7 +18,7 @@ jobs:
     - name: Install pdflatex
       run: sudo apt-get install texlive-latex-recommended
     - name: run
-      run: echo $('pwd ./')
+      run: echo $('ls /home/runner/work/')
     - name: latex run
       run: pdflatex test.tex
     # - uses: actions/checkout@v3
