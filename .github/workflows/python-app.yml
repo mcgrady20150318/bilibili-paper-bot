@@ -16,7 +16,7 @@ jobs:
     # - name: Install poppler
     #   run: sudo apt update & sudo apt upgrade & sudo apt -y install poppler-utils
     - name: Install pdflatex
-      run: sudo apt-get install texlive-latex-recommended & sudo apt-get install texlive-pictures
+      run: sudo apt-get install texlive-latex-recommended & sudo apt install texlive-pictures
     - uses: actions/checkout@v3
     - name: Setup Python environment
       uses: actions/setup-python@v4
