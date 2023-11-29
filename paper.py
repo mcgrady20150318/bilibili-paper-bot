@@ -166,9 +166,9 @@ def gen_slide_pdf(id):
     print(os.system('ls '+path+id))
 
 def gen_slide_assets(id):
-    output_dir = './'+id+'/slide/'
+    output_dir = path+id+'/slide/'
     os.makedirs(output_dir, exist_ok=True)
-    pages = pdf2image.convert_from_path('./'+id+'/main.pdf')
+    pages = pdf2image.convert_from_path(path+id+'/main.pdf')
     for i, page in enumerate(pages):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
