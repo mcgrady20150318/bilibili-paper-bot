@@ -152,6 +152,7 @@ def gen_slide(id):
     data = data.replace('CONCLUSION',gen_item(conclusion))
     f.close()
     f = open('./'+id+'/slide/main.tex','w')
+    r.set("bilibili:"+id+":main.txt",data)
     f.write(data)
     f.close()
 
