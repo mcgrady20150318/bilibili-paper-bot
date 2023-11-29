@@ -162,8 +162,8 @@ def gen_slide_pdf(id):
     os.chdir(path + id+'/slide/')
     os.system('pdflatex main.tex')
     os.system('mv main.pdf ' + path + id)
+    os.system('rm *')
     os.chdir(path)
-    # os.system('rm *')
 
 def gen_slide_assets(id):
     output_dir = './'+id+'/slide/'
@@ -238,7 +238,7 @@ def generate_video(id):
     gen_slide_assets(id)
     s = get_texts(id)
     print(os.listdir('./'+id+'/slide/'))
-    N = len(os.listdir('./'+id+'/slide/')) - 1
+    N = len(os.listdir('./'+id+'/slide/'))
     texts = get_text_seq(s,N)
     
     for idx,text in enumerate(texts):
