@@ -11,15 +11,13 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
     # - name: Install poppler
-    #   run: brew install poppler
-    - name: Install basictex
-      run: brew install basictex & export PATH=/usr/local/texlive/2021basic/bin/universal-darwin/:$PATH
-    - name: restart terminal
-      run: eval "$(/usr/libexec/path_helper)"
+    #   run: sudo apt-get install poppler
+    - name: Install pdflatex
+      run: sudo apt-get install texlive-latex-base
     - uses: actions/checkout@v3
     - name: Setup Python environment
       uses: actions/setup-python@v4
