@@ -16,21 +16,21 @@ jobs:
     steps:
     # - name: Install poppler
     #   run: brew install poppler
-    - name: Install pdflatex
-      run: brew install pdflatex
-    # - name: restart terminal
-    #   run: eval "$(/usr/libexec/path_helper)"
-    # - uses: actions/checkout@v3
-    # - name: Setup Python environment
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: '3.8' 
+    - name: Install basictex
+      run: brew install basictex
+    - name: restart terminal
+      run: eval "$(/usr/libexec/path_helper)"
+    - uses: actions/checkout@v3
+    - name: Setup Python environment
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
 
     # - name: Install Dependence
     #   run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
 
-    # - name: Run paper.py
-    #   run: python ./test.py
+    - name: Run paper.py
+      run: python ./test.py
 
 
 
