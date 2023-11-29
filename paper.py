@@ -21,6 +21,8 @@ from openai import OpenAI
 redis_url = os.getenv('REDIS_URL')
 r = redis.from_url(redis_url)
 
+path = os.getcwd() + '/'
+
 api_key = "Y2w1MzBraHAyazFhZ3NiY3B2aTA6bXNrLUZYYVRtUEVYWkhRMjZCS0ZSR2dtbmR6d3VCMEI="
 client = OpenAI(
     api_key=api_key,
@@ -157,10 +159,11 @@ def gen_slide(id):
     f.close()
 
 def gen_slide_pdf(id):
-    os.chdir('./'+id+'/slide/')
+    os.chdir(path + id+'/slide/')
     os.system('pdflatex main.tex')
-    # os.system('mv main.pdf ../')
-    # os.system('rm *')
+    os.system('mv main.pdf ../')
+    os.system('rm *')
+    print(os.system('ls ./'+id))
 
 def gen_slide_assets(id):
     output_dir = './'+id+'/slide/'
