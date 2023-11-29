@@ -13,21 +13,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # - name: Install poppler
-    #   run: sudo apt update & sudo apt upgrade & sudo apt -y install poppler-utils
-    # - name: Install pdflatex
-    #   run: sudo apt-get install texlive-latex-recommended
-    # - uses: actions/checkout@v3
-    # - name: Setup Python environment
-    #   uses: actions/setup-python@v4
-    #   with:
-    #     python-version: '3.8' 
+    - name: Install poppler
+      run: sudo apt update & sudo apt upgrade & sudo apt -y install poppler-utils
+    - name: Install pdflatex
+      run: sudo apt-get install texlive-latex-recommended
+    - uses: actions/checkout@v3
+    - name: Setup Python environment
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
 
-    # - name: Install Dependence
-    #   run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
+    - name: Install Dependence
+      run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
 
     - name: Run paper.py
-      run: python test.py
+      run: python paper.py
 
 
 
