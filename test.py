@@ -1,3 +1,3 @@
 import os
-os.system('zsh')
+os.system('source ~/.bashrc')
 os.system('pdflatex -h')
