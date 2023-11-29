@@ -17,6 +17,8 @@ jobs:
     #   run: sudo apt update & sudo apt upgrade & sudo apt -y install poppler-utils
     - name: Install pdflatex
       run: sudo apt-get install texlive-latex-recommended
+    - name: run
+      run: echo $('pwd ./')
     - name: latex run
       run: pdflatex test.tex
     # - uses: actions/checkout@v3
