@@ -1,2 +1,4 @@
 import os
-print(os.system('ls ./'))
+path = os.getcwd() + '/'
+print(path)
+os.system('pdflatex ' + path + 'test.tex')
