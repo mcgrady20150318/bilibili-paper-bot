@@ -19,8 +19,9 @@ from pathlib import Path
 from openai import OpenAI
 
 redis_url = os.getenv('REDIS_URL')
-api_key = "Y2w1MzBraHAyazFhZ3NiY3B2aTA6bXNrLUZYYVRtUEVYWkhRMjZCS0ZSR2dtbmR6d3VCMEI="
+r = redis.from_url(redis_url)
 
+api_key = "Y2w1MzBraHAyazFhZ3NiY3B2aTA6bXNrLUZYYVRtUEVYWkhRMjZCS0ZSR2dtbmR6d3VCMEI="
 client = OpenAI(
     api_key=api_key,
     base_url="https://api.moonshot.cn/v1",
