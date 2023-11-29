@@ -227,7 +227,6 @@ def generate_video(id):
     get_content(id)
     gen_readme_content(id)
     gen_slide_content(id)
-    gen_readme(id)
     gen_slide(id)
     gen_assets(id)
     gen_slide_pdf(id)
