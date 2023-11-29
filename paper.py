@@ -33,11 +33,11 @@ slide_prompt = '''
     请基于论文内容，严格按照下面的xml格式生成内容，要求均用英语描述:
     <title>英文标题</title>
     <author>作者姓名，以逗号隔开</author>
-    <motivation>研究动机</motivation>
-    <contribution>研究贡献</contribution>
-    <method>研究方法</method>
-    <experiment>重要实验结果</experiment>
-    <conclusion>结论</conclusion>
+    <motivation>一段话描述研究动机</motivation>
+    <contribution>一段话描述研究贡献</contribution>
+    <method>一段话描述研究方法</method>
+    <experiment>一段话描述重要实验结果</experiment>
+    <conclusion>一段话描述结论</conclusion>
 '''
 
 readme_prompt = '''
