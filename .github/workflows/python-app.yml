@@ -27,7 +27,7 @@ jobs:
     #   run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
 
     - name: Run paper.py
-      run: python /home/runner/work/bilibili-paper-bot/bilibili-paper-bot/test.py
+      run: python test.py
 
 
 
