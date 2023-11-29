@@ -82,7 +82,7 @@ def gen_slide_content(id):
     completion = client.chat.completions.create(
         model="moonshot-v1-128k",
         messages=messages,
-        temperature=0.3,
+        temperature=0.0,
     )
     output = completion.choices[0].message.content
     r.set("bilibili:"+id+":slide.txt",output)
@@ -101,7 +101,7 @@ def gen_readme_content(id):
     completion = client.chat.completions.create(
         model="moonshot-v1-32k",
         messages=messages,
-        temperature=0.3,
+        temperature=0.8,
     )
     output = completion.choices[0].message.content
     r.set("bilibili:"+id+":readme.txt",output)
