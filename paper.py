@@ -228,7 +228,7 @@ def generate_video(id):
     gen_readme_content(id)
     gen_slide_content(id)
     gen_slide(id)
-    gen_assets(id)
+    gen_paper_assets(id)
     gen_slide_pdf(id)
     gen_slide_assets(id)
     s = get_texts(id)
