@@ -162,7 +162,9 @@ def gen_slide_pdf(id):
     os.chdir(path + id+'/slide/')
     os.system('pdflatex main.tex')
     os.system('mv main.pdf ' + path + id)
+    print(os.system('ls ' + path + id))
     os.system('rm *')
+    print(os.system('ls ' + path + id))
     os.chdir(path)
 
 def gen_slide_assets(id):
@@ -172,6 +174,7 @@ def gen_slide_assets(id):
     for i, page in enumerate(pages):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
+    print(os.system('ls ' + './'+id+'/slide/'))
 
 def get_poster(text,id,idx):
     header = Header(text=text,
