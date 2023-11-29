@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # - name: Install poppler
-    #   run: sudo apt-get install poppler
+    - name: Install poppler
+      run: sudo apt-get install poppler
     - name: Install pdflatex
       run: sudo apt-get install texlive-latex-base
     - uses: actions/checkout@v3
@@ -24,15 +24,9 @@ jobs:
       with:
         python-version: '3.8' 
 
-    # - name: Install Dependence
-    #   run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
+    - name: Install Dependence
+      run: pip install requests openai datetime redis asyncio mutagen moviepy edge_tts pdf2image bilibili-api-python nider Pillow==9.4.0 snownlp 
 
     - name: Run paper.py
-      run: python ./test.py
+      run: python ./paper.py
 
-
-
-
-
-    
-   
