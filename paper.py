@@ -295,14 +295,14 @@ def set_status(id):
 if __name__ == '__main__':
     # ids = get_today_list()        
     # print(ids)
-    ids = ['2311.17061']
+    ids = ['2311.16933']
     for id in ids:
-        # r.rpush('paper',id)
-        # try:
-        generate_video(id)
-        # time.sleep(10)
-        # except:
-        #     print('exception')
+        r.rpush('paper',id)
+        try:
+            generate_video(id)
+            time.sleep(10)
+        except:
+            print('exception')
 
 
 
