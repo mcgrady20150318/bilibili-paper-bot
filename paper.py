@@ -234,9 +234,14 @@ def generate_video(id):
     gen_slide(id)
     gen_slide_pdf(id)
     gen_slide_assets(id)
-    # print('len:',len(os.listdir('./'+id+'/slide/')),len(texts))
-    texts = get_texts(id)[:7]
-    
+    N = len(os.listdir('./'+id+'/slide/'))
+    texts = get_texts(id)
+    print('len:',),N,len(texts))
+    if N > len(texts):
+        texts = texts + ['感谢观看，欢迎一键三连！']
+    else:
+        texts = texts[:N] 
+
     for idx,text in enumerate(texts):
         # get_poster(text,id,idx)
         asyncio.run(gen_voice(text,idx,id))
