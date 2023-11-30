@@ -113,7 +113,7 @@ def gen_readme_content(id):
 def gen_paper_assets(id):
     output_dir = './'+id+'/assets/'
     os.makedirs(output_dir, exist_ok=True)
-    pages = pdf2image.convert_from_path('./'+id+'/'+id+'.pdf')
+    pages = pdf2image.convert_from_path('./'+id+'/'+id+'.pdf',dpi=300)
     for i, page in enumerate(pages):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
