@@ -253,7 +253,7 @@ def generate_video(id):
     audio_files.sort(key=lambda x:int(x[:-4]))
     audio_clips = concatenate_audioclips([AudioFileClip(os.path.join(audio_folder,c)) for c in audio_files])
     image_clips = []
-    for idx, image in enumerate(image_files[:N]):
+    for idx, image in enumerate(image_files):
         duration = get_time_count(os.path.join(audio_folder, audio_files[idx]))
         _image = ImageClip(os.path.join(image_folder, image)).set_duration(duration)
         image_clips.append(_image)
