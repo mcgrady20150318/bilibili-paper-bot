@@ -236,7 +236,7 @@ def generate_video(id):
     gen_slide_assets(id)
     N = len(os.listdir('./'+id+'/slide/'))
     texts = get_texts(id)
-    print('len:',),N,len(texts))
+    print('len:',N,len(texts))
     if N > len(texts):
         texts = texts + ['感谢观看，欢迎一键三连！']
     else:
