@@ -23,7 +23,7 @@ r = redis.from_url(redis_url)
 
 path = os.getcwd() + '/'
 
-api_key = "Y2w1MzBraHAyazFhZ3NiY3B2aTA6bXNrLUZYYVRtUEVYWkhRMjZCS0ZSR2dtbmR6d3VCMEI="
+api_key = os.getenv('apikey')
 client = OpenAI(
     api_key=api_key,
     base_url="https://api.moonshot.cn/v1",
