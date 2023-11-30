@@ -49,6 +49,10 @@ readme_prompt = '''
     <tags>这里生成5个中文标签，并且以空格隔开</tags>，生成结果如下：
 '''
 
+read_prompt = '''
+    你现在是PaperWeekly的学术主播Ian，请基于本文内容写一份讲解词，依次从研究动机、研究贡献、方法介绍、实验结果、研究结论等5个方面展开，要求前后具有连贯性，要求严格有7段话。
+'''
+
 def download_pdf(id):
     url = 'http://arxiv.org/pdf/'+id+'.pdf'
     response = requests.get(url)
@@ -107,6 +111,25 @@ def gen_readme_content(id):
     )
     output = completion.choices[0].message.content
     r.set("bilibili:"+id+":readme.txt",output)
+    f.write(output)
+    f.close()
+
+def gen_read_content(id):
+    content = open('./' + id + '/paper.txt','r').read()
+    if len(content) > 10000:
+        content = content[:10000]
+    f = codecs.open('./'+id+'/read.txt','w',"utf-8")
+    messages=[
+        {"role": "system","content": content},
+        {"role": "user", "content": read_prompt},
+    ]
+    completion = client.chat.completions.create(
+        model="moonshot-v1-32k",
+        messages=messages,
+        temperature=0.0,
+    )
+    output = completion.choices[0].message.content
+    r.set("bilibili:"+id+":read.txt",output)
     f.write(output)
     f.close()
 
@@ -176,17 +199,17 @@ def gen_slide_assets(id):
         page.save(image_path, 'JPEG')
     # print(os.system('ls ' + './'+id+'/slide/'))
 
-def get_poster(text,id,idx):
-    header = Header(text=text,
-                    text_width=50,
-                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=15),
-                    align='center',
-                    color='#000100',
-                    )
-    content = Content(header=header)
-    img = Image(content,fullpath='./'+id+'/poster/'+str(idx) + '.png')
-    img.draw_on_image('./'+id+'/slide/'+ str(idx) +'.jpg')
-    os.rename('./'+id+'/poster/'+str(idx) + '.png','./'+id+'/poster/'+str(idx) + '.jpg')
+# def get_poster(text,id,idx):
+#     header = Header(text=text,
+#                     text_width=50,
+#                     font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=15),
+#                     align='center',
+#                     color='#000100',
+#                     )
+#     content = Content(header=header)
+#     img = Image(content,fullpath='./'+id+'/poster/'+str(idx) + '.png')
+#     img.draw_on_image('./'+id+'/slide/'+ str(idx) +'.jpg')
+#     os.rename('./'+id+'/poster/'+str(idx) + '.png','./'+id+'/poster/'+str(idx) + '.jpg')
 
 def get_time_count(audio_file):
     audio = MP3(audio_file)
@@ -197,58 +220,32 @@ async def gen_voice(text,idx,id):
     communicate = edge_tts.Communicate(text, VOICE)  
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
-def get_text_seq(s,N):
-    _texts = SnowNLP(s).sentences
-    pages = N 
-    n = len(_texts)
-    texts = []
-    if n >= 2 * pages:
-        for i in range(0,2*(pages-1),2):
-            texts.append(_texts[i] + _texts[i+1])
-        texts.append("".join(_texts[2*(pages-1)-n:]))
-    if n >= pages and n < 2 * pages:
-        delta = n - pages
-        for i in range(0,2*(delta-1),2):
-            texts.append(_texts[i] + _texts[i+1])
-        for i in range(2*(delta-1),n,1):
-            texts.append(_texts[i])
-    if n < pages:
-        N = n
-        for i in range(0,n,1):
-            texts.append(_texts[i])
-    return texts
-
 def get_texts(id):
-    f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
-    data = f.read()
-    texts = re.search(r'<describe>(.*?)</describe>', data, re.DOTALL)
-    if texts:
-        texts = texts.group(1)
+    texts = open('./'+id+'/read.txt').read().split('\n\n')
     return texts
 
 def generate_video(id):
     download_pdf(id)
     get_content(id)
     gen_readme_content(id)
+    gen_read_content(id)
     gen_paper_assets(id)
     gen_slide_content(id)
     gen_slide(id)
     gen_slide_pdf(id)
     gen_slide_assets(id)
-    s = get_texts(id)
-    print(os.listdir('./'+id+'/slide/'))
-    N = len(os.listdir('./'+id+'/slide/'))
-    texts = get_text_seq(s,N)
+    print('len:',len(os.listdir('./'+id+'/slide/')),len(texts))
+    texts = get_texts(id)[:7]
     
     for idx,text in enumerate(texts):
-        get_poster(text,id,idx)
+        # get_poster(text,id,idx)
         asyncio.run(gen_voice(text,idx,id))
 
     with open('./'+id+'/slide/0.jpg', 'rb') as f:
         file_content = f.read()
     r.set('bilibili:'+id+':cover.jpg',file_content)
 
-    image_folder = './'+id+'/poster'
+    image_folder = './'+id+'/slide'
     audio_folder = './'+id+'/audio'
     image_files = os.listdir(image_folder)
     audio_files = os.listdir(audio_folder)
