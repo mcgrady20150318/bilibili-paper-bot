@@ -234,7 +234,7 @@ def generate_video(id):
     gen_slide(id)
     gen_slide_pdf(id)
     gen_slide_assets(id)
-    print('len:',len(os.listdir('./'+id+'/slide/')),len(texts))
+    # print('len:',len(os.listdir('./'+id+'/slide/')),len(texts))
     texts = get_texts(id)[:7]
     
     for idx,text in enumerate(texts):
