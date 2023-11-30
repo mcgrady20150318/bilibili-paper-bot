@@ -29,7 +29,7 @@ client = OpenAI(
     base_url="https://api.moonshot.cn/v1",
 )
 
-VOICE = "zh-CN-XiaoyiNeural"
+VOICE = "zh-CN-YunxiNeural"
 
 slide_prompt = '''
     请基于论文内容，严格按照下面的xml格式生成内容，要求均用英语描述:
@@ -297,7 +297,7 @@ def set_status(id):
 if __name__ == '__main__':
     # ids = get_today_list()        
     # print(ids)
-    ids = ['2311.17874']
+    ids = ['2311.17921']
     for id in ids:
         # r.rpush('paper',id)
         # try:
