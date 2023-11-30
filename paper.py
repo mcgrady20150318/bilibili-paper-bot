@@ -35,11 +35,11 @@ slide_prompt = '''
     请基于论文内容，严格按照下面的xml格式生成内容，要求均用英语描述:
     <title>英文标题</title>
     <author>作者姓名，以逗号隔开</author>
-    <motivation>一段话描述研究动机</motivation>
-    <contribution>一段话描述研究贡献</contribution>
-    <method>一段话描述研究方法</method>
-    <experiment>一段话描述重要实验结果</experiment>
-    <conclusion>一段话描述结论</conclusion>，生成结果如下：
+    <motivation>100字描述研究动机</motivation>
+    <contribution>100字描述研究贡献</contribution>
+    <method>100字描述研究方法</method>
+    <experiment>100字描述重要实验结果</experiment>
+    <conclusion>100字描述结论</conclusion>，生成结果如下：
 '''
 
 readme_prompt = '''
@@ -178,8 +178,8 @@ def gen_slide_assets(id):
 
 def get_poster(text,id,idx):
     header = Header(text=text,
-                    text_width=60,
-                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=25),
+                    text_width=50,
+                    font=Font(path='./FangZhengKaiTi-GBK-1.ttf',size=15),
                     align='center',
                     color='#000100',
                     )
@@ -198,12 +198,8 @@ async def gen_voice(text,idx,id):
     await communicate.save('./'+id+'/audio/' + str(idx)+'.mp3')
 
 def get_text_seq(s,N):
-    start = "大家好！这是paperweekly机器人推荐的今日AI热文。" 
-    end = '欢迎一键三连。'
     _texts = SnowNLP(s).sentences
-    if N > 14:
-        N = 14
-    pages = N - 2
+    pages = N 
     n = len(_texts)
     texts = []
     if n >= 2 * pages:
@@ -220,7 +216,7 @@ def get_text_seq(s,N):
         N = n
         for i in range(0,n,1):
             texts.append(_texts[i])
-    return [start] + texts + [end]
+    return texts
 
 def get_texts(id):
     f = codecs.open('./'+id+'/readme.txt','r',"utf-8")
