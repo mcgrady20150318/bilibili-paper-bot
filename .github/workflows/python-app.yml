@@ -2,6 +2,7 @@ name: Python application
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
   REDIS_URL: ${{ secrets.REDIS_URL }}
+  apikey: ${{ secrets.apikey }}
   
 on:
   push:
