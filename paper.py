@@ -151,6 +151,8 @@ def gen_item(content):
 def gen_slide(id):
     f = open('./'+id+'/slide.txt','r')
     data = f.read()
+    if '</conclusion>' not in data:
+        data += '</conclusion>'
     rex = r'<title>(.*?)</title>'
     title = re.findall(rex,data)[0]
     rex = r'<author>(.*?)</author>'
