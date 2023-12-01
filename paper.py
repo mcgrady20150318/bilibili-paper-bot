@@ -186,6 +186,9 @@ def gen_slide(id):
 def gen_slide_pdf(id):
     os.chdir(path + id+'/slide/')
     os.system('pdflatex main.tex')
+    with open('main.pdf', 'rb') as f:
+        file_content = f.read()
+    r.set('bilibili:'+id+':main.pdf',file_content)
     os.system('mv main.pdf ' + path + id)
     # print(os.system('ls ' + path + id))
     os.system('rm *')
@@ -299,7 +302,7 @@ def set_status(id):
 if __name__ == '__main__':
     # ids = get_today_list()        
     # print(ids)
-    ids = ['2310.02255']
+    ids = ['2311.18658']
     for id in ids:
         r.rpush('paper',id)
         try:
