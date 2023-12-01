@@ -195,7 +195,7 @@ def gen_slide_pdf(id):
 def gen_slide_assets(id):
     output_dir = './'+id+'/slide/'
     os.makedirs(output_dir, exist_ok=True)
-    pages = pdf2image.convert_from_path('./'+id+'/main.pdf')
+    pages = pdf2image.convert_from_path('./'+id+'/main.pdf',dpi=300)
     for i, page in enumerate(pages):
         image_path = os.path.join(output_dir, f'{i}.jpg')
         page.save(image_path, 'JPEG')
@@ -299,8 +299,7 @@ def set_status(id):
 if __name__ == '__main__':
     # ids = get_today_list()        
     # print(ids)
-    # ids = ['2311.17857','2311.17834','2311.17737','2311.17707','2311.17842']
-    ids = ['2307.16449','2311.15209']
+    ids = ['2310.02255']
     for id in ids:
         r.rpush('paper',id)
         try:
