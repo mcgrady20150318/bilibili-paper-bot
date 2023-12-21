@@ -300,16 +300,16 @@ def set_status(id):
     r.set('bilibili:'+id+":upload",0)
     
 if __name__ == '__main__':
-    # ids = get_today_list()        
-    # print(ids)
-    ids = ['2305.12740']
+    ids = get_today_list()        
+    print(ids)
+    # ids = ['2305.12740']
     for id in ids:
         r.rpush('paper',id)
-        # try:
-        generate_video(id)
-            # time.sleep(10)
-        # except:
-            # print('exception')
+        try:
+            generate_video(id)
+            time.sleep(10)
+        except:
+            print('exception')
 
 
 
