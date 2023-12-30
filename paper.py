@@ -105,7 +105,7 @@ def gen_readme_content(id):
         {"role": "user", "content": readme_prompt},
     ]
     completion = client.chat.completions.create(
-        model="moonshot-v1-32k",
+        model="moonshot-v1-128k",
         messages=messages,
         temperature=0.0,
     )
@@ -124,7 +124,7 @@ def gen_read_content(id):
         {"role": "user", "content": read_prompt},
     ]
     completion = client.chat.completions.create(
-        model="moonshot-v1-32k",
+        model="moonshot-v1-128k",
         messages=messages,
         temperature=0.0,
     )
