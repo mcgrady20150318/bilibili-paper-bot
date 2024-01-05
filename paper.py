@@ -305,11 +305,11 @@ if __name__ == '__main__':
     # ids = ['2312.08935']
     for id in ids:
         r.rpush('paper',id)
-        # try:
-        generate_video(id)
-            # time.sleep(10)
-        # except:
-            # print('exception')
+        try:
+            generate_video(id)
+            time.sleep(10)
+        except:
+            print('exception')
 
 
 
